@@ -82,13 +82,14 @@ After the containers are up and running, you need to initialize the database wit
 
    This script will populate the database with a set of practice questions.
 
-## Development
-
-For development, the Docker setup mounts the source code directories as volumes. This means you can make changes to the code on your host machine, and the changes will be reflected in the running containers.
-
-## Stopping the Application
+### Stopping the Application
 
 To stop the application and remove the containers, use:
     ```
     docker compose down
     ```
+
+
+## Development
+
+For development, the Docker setup mounts the source code directories as volumes. This means you can make changes to the code on your host machine, and the changes will be reflected in the running containers.
