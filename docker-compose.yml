@@ -1,14 +1,31 @@
 version: '3'
 services:
-  app:
-    build: .
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3721:3721"
     volumes:
-      - .:/app
+      - ./src:/app/src
+      - ./public:/app/public
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./beatcode-backend
+      dockerfile: Dockerfile
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./beatcode-backend:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017/leetcode_practice
     depends_on:
       - mongo
 

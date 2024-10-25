@@ -27,7 +27,8 @@ export const updateQuestionData = (questionData, performance) => {
     lastAttemptDate: new Date(),
     attempts: attempts + 1,
     totalPerformance: totalPerformance + performance,
-    averagePerformance: (totalPerformance + performance) / (attempts + 1)
+    averagePerformance: (totalPerformance + performance) / (attempts + 1),
+    lastPerformanceRating: performance
   };
 };
 

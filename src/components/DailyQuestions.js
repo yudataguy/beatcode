@@ -4,7 +4,7 @@ import { updateQuestionData } from '../utils/spacedRepetition';
 
 const API_BASE_URL = 'http://localhost:5005/api';
 
-const DailyQuestions = ({ dailyQuestions, questions: initialQuestions, setQuestions, stats, setStats, addQuestions }) => {
+const DailyQuestions = ({ dailyQuestions, setDailyQuestions, questions: initialQuestions, setQuestions, stats, setStats, addQuestions }) => {
   const [activeQuestions, setActiveQuestions] = useState([]);
   const [finishedQuestions, setFinishedQuestions] = useState([]);
   const [expandedQuestion, setExpandedQuestion] = useState(null);
@@ -14,25 +14,33 @@ const DailyQuestions = ({ dailyQuestions, questions: initialQuestions, setQuesti
   useEffect(() => {
     console.log('Initial questions received:', dailyQuestions);
     if (dailyQuestions && dailyQuestions.length > 0) {
-      // TODO: Update the active and finished questions correctly
-      // const active = initialQuestions.filter(q => q.lastPerformanceRating === null);
-      // const finished = initialQuestions.filter(q => q.lastPerformanceRating !== null);
-      // console.log('Filtered active questions:', active);
-      // console.log('Filtered finished questions:', finished);
       setActiveQuestions(dailyQuestions);
-      // setFinishedQuestions(finished);
       setIsLoading(false);
     } else {
       console.log('No initial questions, fetching from API');
       fetchQuestions();
     }
-  }, []); // Remove initialQuestions from the dependency array
+  }, []); 
 
   useEffect(() => {
     console.log('Daily questions updated:', dailyQuestions);
-    // TODO: Update the active questions based on the new daily questions
-    const active = dailyQuestions.filter(q => q.lastPerformanceRating === null);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of the day
+
+    const active = dailyQuestions.filter(q => {
+      const lastAttemptDate = new Date(q.lastAttemptDate);
+      lastAttemptDate.setHours(0, 0, 0, 0); // Set to start of the day
+      return lastAttemptDate.getTime() !== today.getTime();
+    });
+
+    const finished = dailyQuestions.filter(q => {
+      const lastAttemptDate = new Date(q.lastAttemptDate);
+      lastAttemptDate.setHours(0, 0, 0, 0); // Set to start of the day
+      return lastAttemptDate.getTime() === today.getTime();
+    });
+
     setActiveQuestions(active);
+    setFinishedQuestions(finished);
   }, [dailyQuestions]);
 
   const fetchQuestions = async () => {
@@ -40,8 +48,21 @@ const DailyQuestions = ({ dailyQuestions, questions: initialQuestions, setQuesti
       const response = await axios.get(`${API_BASE_URL}/questions/daily`);
       console.log('Fetched questions from API:', response.data);
       if (Array.isArray(response.data)) {
-        const active = response.data.filter(q => q.lastPerformanceRating === null);
-        const finished = response.data.filter(q => q.lastPerformanceRating !== null);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to start of the day
+
+        const active = dailyQuestions.filter(q => {
+          const lastAttemptDate = new Date(q.lastAttemptDate);
+          lastAttemptDate.setHours(0, 0, 0, 0); // Set to start of the day
+          return lastAttemptDate.getTime() !== today.getTime();
+        });
+
+        const finished = dailyQuestions.filter(q => {
+          const lastAttemptDate = new Date(q.lastAttemptDate);
+          lastAttemptDate.setHours(0, 0, 0, 0); // Set to start of the day
+          return lastAttemptDate.getTime() === today.getTime();
+        });
+        
         console.log('Filtered active questions:', active);
         console.log('Filtered finished questions:', finished);
         setActiveQuestions(active);
@@ -81,12 +102,43 @@ const DailyQuestions = ({ dailyQuestions, questions: initialQuestions, setQuesti
       console.error('Stats object is null');
       return;
     }
+
     try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Get last practice date from the stats (you'll need to add this field to your schema)
+      const lastPracticeDate = stats.lastPracticeDate ? new Date(stats.lastPracticeDate) : null;
+      lastPracticeDate?.setHours(0, 0, 0, 0);
+
+      let newStreak = stats.currentStreak;
+      
+      if (!lastPracticeDate) {
+        // First time practicing
+        newStreak = 1;
+      } else {
+        const diffDays = Math.floor((today - lastPracticeDate) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) {
+          // Already practiced today, don't update streak
+          newStreak = stats.currentStreak;
+        } else if (diffDays === 1) {
+          // Practiced yesterday, increment streak
+          newStreak = stats.currentStreak + 1;
+        } else {
+          // Missed a day, reset streak
+          newStreak = 1;
+        }
+      }
+
       const updatedStats = {
         ...stats,
         questionsPracticed: stats.questionsPracticed + 1,
-        // TODO: Update other stats based on performance
+        currentStreak: newStreak,
+        longestStreak: Math.max(newStreak, stats.longestStreak),
+        lastPracticeDate: today
       };
+
       console.log('Updated stats:', updatedStats);
       await axios.put(`${API_BASE_URL}/stats`, updatedStats);
       setStats(updatedStats);
@@ -109,18 +161,31 @@ const DailyQuestions = ({ dailyQuestions, questions: initialQuestions, setQuesti
         console.log('Updated active questions:', updated);
         return updated;
       });
+      
       setFinishedQuestions(prev => {
         const updated = [...prev, updatedQuestion];
         console.log('Updated finished questions:', updated);
         return updated;
       });
 
-      // Update parent component's state
+      // Update dailyQuestions state to reflect the change
       setQuestions(prevQuestions => {
-        const updated = prevQuestions.map(q => q.id === questionId ? updatedQuestion : q);
+        const updated = prevQuestions.map(q => 
+          q.id === questionId ? updatedQuestion : q
+        );
         console.log('Updated questions in parent state:', updated);
         return updated;
       });
+
+      // Also update the dailyQuestions prop
+      const updatedDailyQuestions = dailyQuestions.map(q => 
+        q.id === questionId ? {
+          ...q,
+          lastAttemptDate: new Date(),
+          lastPerformanceRating: rating
+        } : q
+      );
+      setDailyQuestions(updatedDailyQuestions);
 
       setExpandedQuestion(null);
     } catch (error) {

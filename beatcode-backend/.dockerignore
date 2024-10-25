@@ -1,0 +1,46 @@
+# Dependency directories
+node_modules
+npm-debug.log
+
+# Build output
+build
+dist
+
+# Version control
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor directories and files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Docker files (to avoid recursive copying)
+Dockerfile
+docker-compose.yml
+
+# Other unnecessary files for the Docker image
+README.md
+LICENSE

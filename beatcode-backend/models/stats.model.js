@@ -7,6 +7,9 @@ const statsSchema = new Schema({
   masteryLevel: { type: String, default: 'Beginner' },
   currentStreak: { type: Number, default: 0 },
   longestStreak: { type: Number, default: 0 },
+  lastPracticeDate: { type: Date, default: null },
+}, {
+  timestamps: true
 });
 
 const Stats = mongoose.model('Stats', statsSchema);

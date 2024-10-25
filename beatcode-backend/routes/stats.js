@@ -2,6 +2,7 @@ const router = require('express').Router();
 let Stats = require('../models/stats.model');
 
 router.route('/').get((req, res) => {
+  console.log("get stats")
   Stats.findOne()
     .then(stats => res.json(stats))
     .catch(err => res.status(400).json('Error: ' + err));

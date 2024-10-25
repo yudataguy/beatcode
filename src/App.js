@@ -43,8 +43,26 @@ function App() {
       const response = await axios.post(`${API_BASE_URL}/questions/add`, { count });
       const newQuestions = response.data;
       console.log('New questions:', newQuestions);
-      setDailyQuestions(prevQuestions => [...prevQuestions, ...newQuestions]);
-      console.log('Updated daily questions:', dailyQuestions);
+      
+      // Update questions state
+      setQuestions(prevQuestions => [...prevQuestions, ...newQuestions]);
+      
+      // Merge new questions with existing dailyQuestions, preserving local state
+      setDailyQuestions(prevDailyQuestions => {
+        // Create a map of existing questions with their current state
+        const existingQuestionsMap = new Map(
+          prevDailyQuestions.map(q => [q.id, q])
+        );
+
+        // Merge new questions, keeping existing state if available
+        const mergedQuestions = [
+          ...prevDailyQuestions,
+          ...newQuestions.filter(newQ => !existingQuestionsMap.has(newQ.id))
+        ];
+
+        return mergedQuestions;
+      });
+
     } catch (error) {
       console.error('Error adding questions:', error);
     }
@@ -91,6 +109,7 @@ function App() {
               stats={stats}
               setStats={setStats}
               addQuestions={addQuestions} 
+              setDailyQuestions={setDailyQuestions}
             />} />
             <Route path="/stats" element={<StatsPage stats={stats} questions={questions} />} />
           </Routes>
