@@ -1,6 +1,8 @@
-# BeatCode: LeetCode Practice Application
+# LeetCode Practice Buddy: Your daily companion for coding interview prep!
 
-This project is a LeetCode practice application built with React, Node.js, and MongoDB. It uses Docker for containerization and easy deployment. You can use it to get daily practice questions (default: 3) from [Leetcode Top 150](https://leetcode.com/studyplan/top-interview-150/). It uses space repetition method to help you improve memorization.
+This app sends you 3 carefully selected coding problems each day from LeetCode's [Top 150](https://leetcode.com/studyplan/top-interview-150/) interview questions. It uses smart repetition to help you remember solutions better - just like how you'd learn flashcards, but for coding problems!
+Built with React, Node.js, and MongoDB, the app runs smoothly in Docker containers so you can set it up with minimal hassle.
+Get your daily dose of coding practice and ace those technical interviews! 🚀
 
 ## Getting Started
 
@@ -20,7 +22,7 @@ These instructions will get you a copy of the project up and running on your loc
 3. Build and start the containers:
 
    ```
-   docker-compose up --build
+   docker compose up --build
    ```
 
    This command will start three containers:
@@ -37,7 +39,7 @@ After the containers are up and running, you need to initialize the database wit
 1. Initialize user statistics:
 
    ```
-   docker-compose exec backend node init_stats.js
+   docker compose exec backend node init_stats.js
    ```
 
    This script will create initial statistics for a user in the database.
@@ -45,7 +47,7 @@ After the containers are up and running, you need to initialize the database wit
 2. Populate practice questions:
 
    ```
-   docker-compose exec backend node prepare_questions.js
+   docker compose exec backend node prepare_questions.js
    ```
 
    This script will populate the database with a set of practice questions.
